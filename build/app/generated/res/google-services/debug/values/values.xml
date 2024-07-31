@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">837950643676-j6rrn9l8l0p79r2st1g6h3abhuv68v0e.apps.googleusercontent.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">837950643676</string>
+    <string name="google_api_key" translatable="false">AIzaSyCHrwgOwjyksKnxI2zSCMHaKiYF4CJyiSc</string>
+    <string name="google_app_id" translatable="false">1:837950643676:android:04aebf8b6b66a574f10319</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCHrwgOwjyksKnxI2zSCMHaKiYF4CJyiSc</string>
+    <string name="google_storage_bucket" translatable="false">appflutter-54b08.appspot.com</string>
+    <string name="project_id" translatable="false">appflutter-54b08</string>
+</resources>
