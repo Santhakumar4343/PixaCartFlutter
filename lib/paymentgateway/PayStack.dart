@@ -93,7 +93,7 @@ class PayStack extends StatefulWidget {
 
         for(int i=0;i<cartList.length;i++){
           await  access.delete(""+cartList[i].variant_id);
-          shareprefs.deleteData(""+cartList[i].variant_id);
+
         }
 
 

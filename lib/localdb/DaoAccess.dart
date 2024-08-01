@@ -9,8 +9,7 @@ import 'ListEntity.dart';
 @dao
 abstract class DaoAccess {
 
-  @Query('SELECT * FROM ListEntity WHERE variant_id = :variant_id')
-  Future<List<ListEntity>> findAllList(String variant_id);
+
 
   @Query('SELECT * FROM ListEntity')
   Future<List<ListEntity>> getAll();

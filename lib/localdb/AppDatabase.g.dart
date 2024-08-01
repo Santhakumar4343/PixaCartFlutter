@@ -82,7 +82,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ListEntity` (`variant_id` TEXT NOT NULL, `id` TEXT NOT NULL, `sellerId` TEXT NOT NULL, `prod_unitprice` TEXT NOT NULL, `prod_discount_type` TEXT NOT NULL, `prod_quantity` TEXT NOT NULL, `order_quantity` TEXT NOT NULL, `prod_image` TEXT NOT NULL, `prod_name` TEXT NOT NULL, `prod_discount` TEXT NOT NULL, `prod_strikeout_price` TEXT NOT NULL, `isLiked` INTEGER NOT NULL, PRIMARY KEY (`variant_id`))');
+            'CREATE TABLE IF NOT EXISTS `ListEntity` (`variant_id` TEXT NOT NULL, `id` TEXT NOT NULL, `sellerId` TEXT NOT NULL, `prod_unitprice` TEXT NOT NULL, `prod_discount_type` TEXT NOT NULL, `selectedSize` TEXT NOT NULL, `selectedPrice` TEXT NOT NULL, `prod_quantity` TEXT NOT NULL, `order_quantity` TEXT NOT NULL, `prod_image` TEXT NOT NULL, `prod_name` TEXT NOT NULL, `prod_discount` TEXT NOT NULL, `prod_strikeout_price` TEXT NOT NULL, `isLiked` INTEGER NOT NULL, PRIMARY KEY (`variant_id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -96,6 +96,7 @@ class _$AppDatabase extends AppDatabase {
   }
 }
 
+
 class _$DaoAccess extends DaoAccess {
   _$DaoAccess(this.database, this.changeListener)
       : _queryAdapter = QueryAdapter(database),
@@ -103,11 +104,53 @@ class _$DaoAccess extends DaoAccess {
             database,
             'ListEntity',
                 (ListEntity item) => <String, Object?>{
-              'variant_id': item.variant_id,
               'id': item.id,
+              'variant_id': item.variant_id,
               'sellerId': item.sellerId,
               'prod_unitprice': item.prod_unitprice,
               'prod_discount_type': item.prod_discount_type,
+              'selectedSize': item.selectedSize,
+              'selectedPrice': item.selectedPrice,
+              'prod_quantity': item.prod_quantity,
+              'order_quantity': item.order_quantity,
+              'prod_image': item.prod_image,
+              'prod_name': item.prod_name,
+              'prod_discount': item.prod_discount,
+              'prod_strikeout_price': item.prod_strikeout_price,
+              'isLiked': item.isLiked
+            }),
+        _listEntityUpdateAdapter = UpdateAdapter(
+            database,
+            'ListEntity',
+            ['id'],
+                (ListEntity item) => <String, Object?>{
+              'id': item.id,
+              'variant_id': item.variant_id,
+              'sellerId': item.sellerId,
+              'prod_unitprice': item.prod_unitprice,
+              'prod_discount_type': item.prod_discount_type,
+              'selectedSize': item.selectedSize,
+              'selectedPrice': item.selectedPrice,
+              'prod_quantity': item.prod_quantity,
+              'order_quantity': item.order_quantity,
+              'prod_image': item.prod_image,
+              'prod_name': item.prod_name,
+              'prod_discount': item.prod_discount,
+              'prod_strikeout_price': item.prod_strikeout_price,
+              'isLiked': item.isLiked
+            }),
+        _listEntityDeletionAdapter = DeletionAdapter(
+            database,
+            'ListEntity',
+            ['id'],
+                (ListEntity item) => <String, Object?>{
+              'id': item.id,
+              'variant_id': item.variant_id,
+              'sellerId': item.sellerId,
+              'prod_unitprice': item.prod_unitprice,
+              'prod_discount_type': item.prod_discount_type,
+              'selectedSize': item.selectedSize,
+              'selectedPrice': item.selectedPrice,
               'prod_quantity': item.prod_quantity,
               'order_quantity': item.order_quantity,
               'prod_image': item.prod_image,
@@ -118,49 +161,58 @@ class _$DaoAccess extends DaoAccess {
             });
 
   final sqflite.DatabaseExecutor database;
-
   final StreamController<String> changeListener;
-
   final QueryAdapter _queryAdapter;
-
   final InsertionAdapter<ListEntity> _listEntityInsertionAdapter;
+  final UpdateAdapter<ListEntity> _listEntityUpdateAdapter;
+  final DeletionAdapter<ListEntity> _listEntityDeletionAdapter;
 
   @override
-  Future<List<ListEntity>> findAllList(String variant_id) async {
+  Future<List<ListEntity>> findAllList(String variant_id, String selectedSize) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ListEntity WHERE variant_id = ?1',
+        'SELECT * FROM ListEntity WHERE variant_id = ?1 AND selectedSize = ?2',
         mapper: (Map<String, Object?> row) => ListEntity(
-            row['id'] as String,
-            row['variant_id'] as String,
-            row['sellerId'] as String,
-            row['prod_unitprice'] as String,
-            row['prod_discount_type'] as String,
-            row['order_quantity'] as String,
-            row['prod_quantity'] as String,
-            row['prod_image'] as String,
-            row['prod_name'] as String,
-            row['prod_discount'] as String,
-            row['prod_strikeout_price'] as String,
-            row['isLiked'] as int),
-        arguments: [variant_id]);
+            id: row['id'] as int?,
+            variant_id: row['variant_id'] as String,
+            sellerId: row['sellerId'] as String,
+            prod_unitprice: row['prod_unitprice'] as String,
+            prod_discount_type: row['prod_discount_type'] as String,
+            selectedSize: row['selectedSize'] as String,
+            selectedPrice: row['selectedPrice'] as String,
+            order_quantity: row['order_quantity'] as String,
+            prod_quantity: row['prod_quantity'] as String,
+            prod_image: row['prod_image'] as String,
+            prod_name: row['prod_name'] as String,
+            prod_discount: row['prod_discount'] as String,
+            prod_strikeout_price: row['prod_strikeout_price'] as String,
+            isLiked: row['isLiked'] as int),
+        arguments: [variant_id, selectedSize]);
   }
 
   @override
   Future<List<ListEntity>> getAll() async {
-    return _queryAdapter.queryList('SELECT * FROM ListEntity',
+    return _queryAdapter.queryList(
+        'SELECT * FROM ListEntity',
         mapper: (Map<String, Object?> row) => ListEntity(
-            row['id'] as String,
-            row['variant_id'] as String,
-            row['sellerId'] as String,
-            row['prod_unitprice'] as String,
-            row['prod_discount_type'] as String,
-            row['order_quantity'] as String,
-            row['prod_quantity'] as String,
-            row['prod_image'] as String,
-            row['prod_name'] as String,
-            row['prod_discount'] as String,
-            row['prod_strikeout_price'] as String,
-            row['isLiked'] as int));
+            id: row['id'] as int?,
+            variant_id: row['variant_id'] as String,
+            sellerId: row['sellerId'] as String,
+            prod_unitprice: row['prod_unitprice'] as String,
+            prod_discount_type: row['prod_discount_type'] as String,
+            selectedSize: row['selectedSize'] as String,
+            selectedPrice: row['selectedPrice'] as String,
+            order_quantity: row['order_quantity'] as String,
+            prod_quantity: row['prod_quantity'] as String,
+            prod_image: row['prod_image'] as String,
+            prod_name: row['prod_name'] as String,
+            prod_discount: row['prod_discount'] as String,
+            prod_strikeout_price: row['prod_strikeout_price'] as String,
+            isLiked: row['isLiked'] as int));
+  }
+
+  @override
+  Future<void> insertInList(ListEntity list) async {
+    await _listEntityInsertionAdapter.insert(list, OnConflictStrategy.abort);
   }
 
   @override
@@ -177,8 +229,7 @@ class _$DaoAccess extends DaoAccess {
         arguments: [order_quantity, variant_id]);
   }
 
-  @override
-  Future<void> insertInList(ListEntity list) async {
-    await _listEntityInsertionAdapter.insert(list, OnConflictStrategy.abort);
-  }
 }
+
+
+

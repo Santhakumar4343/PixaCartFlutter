@@ -69,16 +69,18 @@ class cartState extends State<MyCart> {
   int cartLength = 0;
   double amount = 0.0, strickPrice = 0.0, diffAmount = 0.0;
   String prod_details = '[]';
-  Map<String, String> selectedPrices = {}; // Add this to store selectedPrice for each variant_id
+
+  // Maps to store selectedPrice and selectedSize for each variant_id
+  Map<String, String> selectedPrices = {};
   Map<String, String> selectedSizes = {};
 
   Future<void> initDb() async {
     database = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
     access = await database.daoaccess;
-    fecth();
+    fetch(); // Fetch data after initializing the database
   }
 
-  Future<void> fecth() async {
+  Future<void> fetch() async {
     amount = 0.0;
     strickPrice = 0.0;
     diffAmount = 0.0;
@@ -91,18 +93,11 @@ class cartState extends State<MyCart> {
     selectedSizes.clear();
 
     if (cartLength > 0) {
-      // Fetch selected prices and sizes for each variant_id
+      // Fetch selected prices and sizes for each variant_id directly from the database
       for (int i = 0; i < cartList.length; i++) {
         String variantId = cartList[i].variant_id;
-        String? jsonData = await sharePrefs.retrieveData(variantId);
-        if (jsonData != null) {
-          Map<String, dynamic> data = jsonDecode(jsonData);
-          // print("Retrieved data for variantId $variantId: $data");
-          selectedPrices[variantId] = data['selectedPrice'];
-          selectedSizes[variantId] = data['selectedSize'];
-        } else {
-          // print("No data found for variantId $variantId");
-        }
+        selectedPrices[variantId] = cartList[i].selectedPrice;
+        selectedSizes[variantId] = cartList[i].selectedSize;
       }
 
       // Process cart items
@@ -120,9 +115,12 @@ class cartState extends State<MyCart> {
         }
         cartList[i].prod_unitprice = selectedPrice.toString();
 
+        // Convert id to String before using it
+        String id = cartList[i].id?.toString() ?? '';
+
         // Add to the list with updated prod_unitprice and selectedSize
         lis.add(jsonPro(
-          cartList[i].id,
+          id, // Convert int? to String
           cartList[i].variant_id,
           cartList[i].sellerId,
           cartList[i].order_quantity,
@@ -136,13 +134,13 @@ class cartState extends State<MyCart> {
     // Convert the list to JSON
     var json = jsonEncode(lis.map((e) => e.toJson()).toList());
     prod_details = json;
-    // print("Updated prod_details: $prod_details");
     setState(() {});
   }
 
-  updateData(ListEntity listEntity) async {
-    await access.insertInList(listEntity);
-    fecth();
+
+  Future<void> updateData(ListEntity listEntity) async {
+    await access.insertInList(listEntity); // Insert with auto-generated ID
+    fetch();
   }
 
   Future<void> getValue() async {
@@ -153,7 +151,7 @@ class cartState extends State<MyCart> {
     ModelSettings modelSettings = ModelSettings.fromJson(parsed);
     currSym = modelSettings.data.currency_symbol.toString();
     hasData = true;
-    fecth();
+    fetch();
     setState(() {});
   }
 
@@ -168,6 +166,7 @@ class cartState extends State<MyCart> {
     getValue();
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
 
@@ -648,7 +647,7 @@ class cartState extends State<MyCart> {
                                                             int quan= int.parse(cartList[idx].order_quantity);
                                                             quan--;
                                                             await access.updateList(''+quan.toString(),''+cartList[idx].variant_id);
-                                                            fecth();
+                                                            fetch();
 
                                                           }else{
                                                             Fluttertoast.showToast(
@@ -686,7 +685,7 @@ class cartState extends State<MyCart> {
                                                             int quan= int.parse(cartList[idx].order_quantity);
                                                             quan++;
                                                             await access.updateList(''+quan.toString(),''+cartList[idx].variant_id);
-                                                            fecth();
+                                                            fetch();
                                                           }else{
                                                             Fluttertoast.showToast(
                                                                 msg: 'No More Items Available..',
@@ -707,8 +706,8 @@ class cartState extends State<MyCart> {
                                                 InkResponse(
                                                   onTap: () async {
                                                     await access.delete(''+cartList[idx].variant_id);
-                                                   sharePrefs.deleteData(''+cartList[idx].variant_id);
-                                                    fecth();
+
+                                                    fetch();
 
                                                   },child :Container(
                                                   margin: EdgeInsets.fromLTRB(1, 0, 4, 0),

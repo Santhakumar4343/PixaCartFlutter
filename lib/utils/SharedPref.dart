@@ -3,20 +3,7 @@ import 'package:e_com/model/UserLoginModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPref {
-  Future<void> storeData(String key, String value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(key, value);
-  }
 
-  Future<String?> retrieveData(String key) async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(key);
-  }
-
-  Future<void> deleteData(String key) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(key);
-  }
   setRememberMe(String lang) async {
 
     SharedPreferences sharedPref = await SharedPreferences.getInstance();

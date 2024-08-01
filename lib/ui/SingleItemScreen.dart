@@ -3456,34 +3456,26 @@ Container(margin: EdgeInsets.fromLTRB(12, 0, 60, 0),child:TextField( decoration:
     );
     } else {
     List<ListEntity> listCheck = await access.findAllList(
-    productSingle.data.prod_variants[va_index].variant_id,
+    productSingle.data.prod_variants[va_index].variant_id,selectedSize
     );
-    if (listCheck.isEmpty&&selectedSize!="") {
+    if (listCheck.isEmpty && selectedSize != "") {
     await access.insertInList(ListEntity(
-    productSingle.data.id,
-    productSingle.data.prod_variants[va_index].variant_id,
-    productSingle.data.prod_sellerid,
-    productSingle.data.prod_variants[va_index].prod_unitprice,
-    productSingle.data.prod_discount_type,
-    "" + quan.toString(),
-    productSingle.data.prod_variants[va_index].prod_quantity.toString(),
-    productSingle.data.prod_variants[va_index].prod_image[0],
-    productSingle.data.prod_name + " (" +
+    variant_id: productSingle.data.prod_variants[va_index].variant_id,
+    sellerId: productSingle.data.prod_sellerid,
+    prod_unitprice: productSingle.data.prod_variants[va_index].prod_unitprice,
+    prod_discount_type: productSingle.data.prod_discount_type,
+    selectedSize: selectedSize,
+    selectedPrice: selectedPrice.toString(),
+    order_quantity: quan.toString(),
+    prod_quantity: productSingle.data.prod_variants[va_index].prod_quantity.toString(),
+    prod_image: productSingle.data.prod_variants[va_index].prod_image[0],
+    prod_name: productSingle.data.prod_name + " (" +
     productSingle.data.prod_variants[va_index].pro_subtitle + ")",
-    productSingle.data.prod_discount.toString(),
-    productSingle.data.prod_variants[va_index].prod_strikeout_price,
-    productSingle.data.isLiked,
+    prod_discount: productSingle.data.prod_discount.toString(),
+    prod_strikeout_price: productSingle.data.prod_variants[va_index].prod_strikeout_price,
+    isLiked: productSingle.data.isLiked,
     ));
 
-    // Store variant_id, selectedSize, and selectedPrice in SharedPreferences
-    String vid = productSingle.data.prod_variants[va_index].variant_id;
-
-    Map<String, dynamic> data = {
-    'selectedSize': selectedSize,
-    'selectedPrice': selectedPrice.toString(),  // Ensure the price is stored as a string
-    };
-SharedPref sharedPref=new SharedPref();
-    await sharedPref.storeData(vid, jsonEncode(data));
 
     Fluttertoast.showToast(
     msg: 'Added Successfully',
@@ -3548,34 +3540,25 @@ SharedPref sharedPref=new SharedPref();
                           List<ListEntity> listCheck = await access.findAllList(
                             productSingle.data.prod_variants[va_index].variant_id,
                           );
-                          if (listCheck.isEmpty) {
+                          if (listCheck.isEmpty && selectedSize != "") {
                             await access.insertInList(ListEntity(
-                              productSingle.data.id,
-                              productSingle.data.prod_variants[va_index].variant_id,
-                              productSingle.data.prod_sellerid,
-                              productSingle.data.prod_variants[va_index].prod_unitprice,
-                              productSingle.data.prod_discount_type,
-                              "" + quan.toString(),
-                              productSingle.data.prod_variants[va_index].prod_quantity.toString(),
-                              productSingle.data.prod_variants[va_index].prod_image[0],
-                              productSingle.data.prod_name + " (" +
+                              variant_id: productSingle.data.prod_variants[va_index].variant_id,
+                              sellerId: productSingle.data.prod_sellerid,
+                              prod_unitprice: productSingle.data.prod_variants[va_index].prod_unitprice,
+                              prod_discount_type: productSingle.data.prod_discount_type,
+                              selectedSize: selectedSize,
+                              selectedPrice: selectedPrice.toString(),
+                              order_quantity: quan.toString(),
+                              prod_quantity: productSingle.data.prod_variants[va_index].prod_quantity.toString(),
+                              prod_image: productSingle.data.prod_variants[va_index].prod_image[0],
+                              prod_name: productSingle.data.prod_name + " (" +
                                   productSingle.data.prod_variants[va_index].pro_subtitle + ")",
-                              productSingle.data.prod_discount.toString(),
-                              productSingle.data.prod_variants[va_index].prod_strikeout_price,
-                              productSingle.data.isLiked,
+                              prod_discount: productSingle.data.prod_discount.toString(),
+                              prod_strikeout_price: productSingle.data.prod_variants[va_index].prod_strikeout_price,
+                              isLiked: productSingle.data.isLiked,
                             ));
-
-                            // Store variant_id, selectedSize, and selectedPrice in SharedPreferences
-                            String vid = productSingle.data.prod_variants[va_index].variant_id;
-
-                            Map<String, dynamic> data = {
-                              'selectedSize': selectedSize,
-                              'selectedPrice': selectedPrice.toString(),  // Ensure the price is stored as a string
-                            };
-                            SharedPref sharedPref=new SharedPref();
-                            await sharedPref.storeData(vid, jsonEncode(data));
-                            refreshDb();
                           }
+
                           Navigator.of(context).push(MaterialPageRoute(builder: (context) {
                             return MyCart();
                           },)).then((value) => refreshDb());
