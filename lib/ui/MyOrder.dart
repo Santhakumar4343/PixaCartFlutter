@@ -1014,6 +1014,36 @@ if(category.data.length==0){
                                       Row(
                                         children: [
                                           Text(
+                                            'Selected Option : ',
+                                            style: TextStyle(
+                                                fontFamily: 'OpenSans-Bold',
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 18,
+                                                color: Color(
+                                                    ColorConsts.blackColor)),
+                                          ),
+                                          Container(
+                                              height: 40,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .spaceEvenly,
+                                                children: [
+                                                  Text(
+                                                    dataOrder.order_Option.toString(),
+                                                    style: TextStyle(
+                                                        fontFamily: 'OpenSans',
+                                                        fontSize: 19,
+                                                        color: Color(ColorConsts
+                                                            .grayColor)),
+                                                  ),
+                                                ],
+                                              )),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(
                                             'Quantity : ',
                                             style: TextStyle(
                                                 fontFamily: 'OpenSans-Bold',

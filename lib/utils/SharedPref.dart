@@ -12,6 +12,11 @@ class SharedPref {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(key);
   }
+
+  Future<void> deleteData(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(key);
+  }
   setRememberMe(String lang) async {
 
     SharedPreferences sharedPref = await SharedPreferences.getInstance();

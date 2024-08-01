@@ -119,7 +119,6 @@ class OrderPresenter{
       return '0';
     }
   }
-
   Future<String> getOrderPlace(
       String token,userId,total_amount,shipping_address,billing_address,payment_mode,payment_status,products_details,payment_details) async {
 

@@ -23,16 +23,27 @@ class MyCart extends StatefulWidget{
 
 
 }
-class jsonPro{
-  String pid='';
-  String vid='';
-  String seller_id='';
-  String qty='';
-  String price='';
-  String subtotal='';
-  jsonPro(this.pid,this.vid,this.seller_id, this.qty, this.price, this.subtotal);
+class jsonPro {
+  String pid = '';
+  String vid = '';
+  String seller_id = '';
+  String qty = '';
+  String price = '';
+  String subtotal = '';
+  String? selectedSize = ''; // Add this field
+
+  jsonPro(this.pid, this.vid, this.seller_id, this.qty, this.price, this.subtotal, [this.selectedSize]);
+
   factory jsonPro.fromJson(Map<String, dynamic> json) {
-    return jsonPro(json['pid'],json['vid'],json['seller_id'],json['qty'],json['price'],json['subtotal']);
+    return jsonPro(
+      json['pid'],
+      json['vid'],
+      json['seller_id'],
+      json['qty'],
+      json['price'],
+      json['subtotal'],
+      json['selectedSize'], // Parse selectedSize
+    );
   }
 
   Map<String, dynamic> toJson() => {
@@ -42,28 +53,28 @@ class jsonPro{
     'qty': qty,
     'price': price,
     'subtotal': subtotal,
+    'selectedSize': selectedSize, // Add selectedSize
   };
-
 }
-class cartState extends State{
 
-
-  bool hasData=false;
+class cartState extends State<MyCart> {
+  bool hasData = false;
   SharedPref sharePrefs = SharedPref();
-  String? tag='';
+  String? tag = '';
   late UserLoginModel _userLoginModel;
   String currSym = '\$';
   late final access;
   late final database;
   late List<ListEntity> cartList;
-  int cartLength=0;
-  double amount =0.0,strickPrice=0.0,diffAmount=0.0;
-  String prod_details='[]';
+  int cartLength = 0;
+  double amount = 0.0, strickPrice = 0.0, diffAmount = 0.0;
+  String prod_details = '[]';
   Map<String, String> selectedPrices = {}; // Add this to store selectedPrice for each variant_id
-  Map<String,String> selectedSizes={};
+  Map<String, String> selectedSizes = {};
+
   Future<void> initDb() async {
     database = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
-    access =await database.daoaccess;
+    access = await database.daoaccess;
     fecth();
   }
 
@@ -75,19 +86,22 @@ class cartState extends State{
     cartList = await access.getAll();
     cartLength = cartList.length;
 
-    // A map to hold the selected prices for each variant_id
-    Map<String, String> selectedPrices = {};
+    // Clear the maps before populating
+    selectedPrices.clear();
+    selectedSizes.clear();
 
     if (cartLength > 0) {
-      // Fetch selected prices for each variant_id
+      // Fetch selected prices and sizes for each variant_id
       for (int i = 0; i < cartList.length; i++) {
         String variantId = cartList[i].variant_id;
         String? jsonData = await sharePrefs.retrieveData(variantId);
         if (jsonData != null) {
           Map<String, dynamic> data = jsonDecode(jsonData);
-          print(variantId);
+          // print("Retrieved data for variantId $variantId: $data");
           selectedPrices[variantId] = data['selectedPrice'];
-          selectedSizes[variantId]=data['selectedSize'];
+          selectedSizes[variantId] = data['selectedSize'];
+        } else {
+          // print("No data found for variantId $variantId");
         }
       }
 
@@ -95,6 +109,7 @@ class cartState extends State{
       for (int i = 0; i < cartList.length; i++) {
         String? selectedPriceStr = selectedPrices[cartList[i].variant_id];
         double selectedPrice = selectedPriceStr != null ? double.parse(selectedPriceStr) : 0.0;
+        String? selectedSize = selectedSizes[cartList[i].variant_id]; // Fetch selectedSize
 
         // Calculate amounts based on the selectedPrice
         amount += selectedPrice * double.parse(cartList[i].order_quantity);
@@ -103,15 +118,17 @@ class cartState extends State{
         if (double.parse(cartList[i].prod_strikeout_price) >= selectedPrice) {
           diffAmount += (double.parse(cartList[i].prod_strikeout_price) - selectedPrice) * double.parse(cartList[i].order_quantity);
         }
-        cartList[i].prod_unitprice=selectedPrice.toString();
-        // Add to the list with updated prod_unitprice
+        cartList[i].prod_unitprice = selectedPrice.toString();
+
+        // Add to the list with updated prod_unitprice and selectedSize
         lis.add(jsonPro(
           cartList[i].id,
           cartList[i].variant_id,
           cartList[i].sellerId,
           cartList[i].order_quantity,
-        cartList[i].prod_unitprice, // Use selectedPrice as prod_unitprice
+          cartList[i].prod_unitprice, // Use selectedPrice as prod_unitprice
           (selectedPrice * double.parse(cartList[i].order_quantity)).toString(),
+          selectedSize, // Add selectedSize
         ));
       }
     }
@@ -119,39 +136,38 @@ class cartState extends State{
     // Convert the list to JSON
     var json = jsonEncode(lis.map((e) => e.toJson()).toList());
     prod_details = json;
+    // print("Updated prod_details: $prod_details");
     setState(() {});
   }
-
-
-
 
   updateData(ListEntity listEntity) async {
     await access.insertInList(listEntity);
     fecth();
   }
+
   Future<void> getValue() async {
-    tag= await sharePrefs.getLanguage();
-    _userLoginModel=await sharePrefs.getLoginUserData();
-    String? sett = await sharePrefs.getSettings() ;
+    tag = await sharePrefs.getLanguage();
+    _userLoginModel = await sharePrefs.getLoginUserData();
+    String? sett = await sharePrefs.getSettings();
     final Map<String, dynamic> parsed = json.decode(sett!);
-    ModelSettings  modelSettings = ModelSettings.fromJson(parsed);
-    currSym=modelSettings.data.currency_symbol.toString();
-    hasData=true;
+    ModelSettings modelSettings = ModelSettings.fromJson(parsed);
+    currSym = modelSettings.data.currency_symbol.toString();
+    hasData = true;
     fecth();
-    setState(() {
-    });
+    setState(() {});
   }
+
   void _reload() {
     initDb();
     getValue();
   }
+
   @override
   void initState() {
     initDb();
     getValue();
     super.initState();
   }
-
   @override
   Widget build(BuildContext context) {
 
@@ -691,6 +707,7 @@ class cartState extends State{
                                                 InkResponse(
                                                   onTap: () async {
                                                     await access.delete(''+cartList[idx].variant_id);
+                                                   sharePrefs.deleteData(''+cartList[idx].variant_id);
                                                     fecth();
 
                                                   },child :Container(

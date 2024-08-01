@@ -1,11 +1,11 @@
 class AppConstant {
   //app name
   static const String appName = 'Quick Mart';   // put    app name here
+  // static const String BaseUrl = "http://18.61.197.237:3000"   // put    main url here
+  //     +"/api/";
 
   static const String BaseUrl = "http://10.0.2.2:3000"   // put    main url here
       +"/api/";
-  // static const String BaseUrl = "http://localhost:3000"   // put    main url here
-  //     +"/api/";
   //api name
   static const String API_LOGIN = "login";
   static const String API_SIGNUP = "register";

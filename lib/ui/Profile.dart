@@ -57,8 +57,8 @@ Future<void> getWishList() async {
   String? sett = await sharePrefs.getSettings();
   final Map<String, dynamic> parsed = json.decode(sett!);
   ModelSettings modelSettings = ModelSettings.fromJson(parsed);
-  if((modelSettings.data.wishlist_count-1)> 0) {
-    wishListLength = (modelSettings.data.wishlist_count - 1).toString();
+  if((modelSettings.data.wishlist_count)> 0) {
+    wishListLength = (modelSettings.data.wishlist_count).toString();
   }
 
   myOrderLen=modelSettings.data.myorder_count.toString();

@@ -32,6 +32,7 @@ class orderData {
   String sub_orderid = "";
   String prod_sellerid = "";
   String id = "";
+  String order_Option="";
   int order_qty ;
   String order_date = "";
   String prod_attributes = "";
@@ -62,6 +63,7 @@ class orderData {
       this.sub_orderid,
       this.prod_sellerid,
       this.id,
+     this.order_Option,
       this.order_qty,
       this.order_date,
       this.prod_attributes,
@@ -91,6 +93,7 @@ class orderData {
       json['sub_orderid'] ?? '',
       json['prod_sellerid'] ?? '',
       json['_id'] ?? '',
+      json['order_Option'] ?? '',
       json['order_qty'] ?? '',
       json['order_date'] ?? '',
       json['prod_attributes'] ?? '',

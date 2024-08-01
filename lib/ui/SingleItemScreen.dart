@@ -3435,6 +3435,16 @@ Container(margin: EdgeInsets.fromLTRB(12, 0, 60, 0),child:TextField( decoration:
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,children: [
                       InkResponse(
     onTap: () async {
+      if(selectedSize==""){
+        // print("ok");
+        Fluttertoast.showToast(
+            msg: 'Please Select  Option',
+            toastLength: Toast.LENGTH_SHORT,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.grey,
+            textColor: Color(ColorConsts.whiteColor),
+            fontSize: 14.0);
+      }
     if (productSingle.data.prod_variants[va_index].prod_quantity == 0) {
     Fluttertoast.showToast(
     msg: 'Not Available!',
@@ -3448,7 +3458,7 @@ Container(margin: EdgeInsets.fromLTRB(12, 0, 60, 0),child:TextField( decoration:
     List<ListEntity> listCheck = await access.findAllList(
     productSingle.data.prod_variants[va_index].variant_id,
     );
-    if (listCheck.isEmpty) {
+    if (listCheck.isEmpty&&selectedSize!="") {
     await access.insertInList(ListEntity(
     productSingle.data.id,
     productSingle.data.prod_variants[va_index].variant_id,
@@ -3533,7 +3543,8 @@ SharedPref sharedPref=new SharedPref();
                               backgroundColor: Colors.grey,
                               textColor: Color(ColorConsts.whiteColor),
                               fontSize: 14.0);
-                        }else {
+                        }
+                        else {
                           List<ListEntity> listCheck = await access.findAllList(
                             productSingle.data.prod_variants[va_index].variant_id,
                           );
