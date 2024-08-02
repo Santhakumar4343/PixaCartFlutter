@@ -6,6 +6,7 @@ class ListEntity {
   final int? regno;
 
   final String variant_id;
+  final String id;
   final String sellerId;
   String prod_unitprice;
   final String prod_discount_type;
@@ -22,6 +23,7 @@ class ListEntity {
   ListEntity({
     this.regno,
     required this.variant_id,
+    required this.id,
     required this.sellerId,
     required this.prod_unitprice,
     required this.prod_discount_type,

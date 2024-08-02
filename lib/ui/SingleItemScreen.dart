@@ -187,7 +187,17 @@ Future<void> getValue() async {
           fontSize: 14.0);
     }
   }
+  int calculateAndAssignPrice(List<ProdSize> sizes, String selectedSize, int quantity) {
+    int price = sizes.firstWhere(
+          (size) => size.size == selectedSize,
+      orElse: () => ProdSize(size: '', quantity: 0, price: 0),
+    ).price;
 
+    // Assign the found price to selectedPrice
+    selectedPrice = price;
+
+    return price * quantity;
+  }
   addReviewHelpCount(String review_id) async {
     Fluttertoast.showToast(
         msg: 'Processing please wait..',
@@ -1130,7 +1140,7 @@ Future<void> getValue() async {
                               Container(
                                 margin: EdgeInsets.fromLTRB(16, 4, 0, 4),
                                 child: Text(
-                                  'Price: ${(quan * selectedPrice).toStringAsFixed(2)}',
+                                  'Price: ${calculateAndAssignPrice(productSingle.data.prod_variants[va_index].prod_sizes, selectedSize, quan)}',
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w500,
@@ -3434,98 +3444,116 @@ Container(margin: EdgeInsets.fromLTRB(12, 0, 60, 0),child:TextField( decoration:
                     if(hasData) Align(alignment: Alignment.bottomCenter,child:  Container(child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,children: [
                       InkResponse(
-    onTap: () async {
-      if(selectedSize==""){
-        // print("ok");
-        Fluttertoast.showToast(
-            msg: 'Please Select  Option',
-            toastLength: Toast.LENGTH_SHORT,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.grey,
-            textColor: Color(ColorConsts.whiteColor),
-            fontSize: 14.0);
-      }
-    if (productSingle.data.prod_variants[va_index].prod_quantity == 0) {
-    Fluttertoast.showToast(
-    msg: 'Not Available!',
-    toastLength: Toast.LENGTH_SHORT,
-    timeInSecForIosWeb: 1,
-    backgroundColor: Colors.grey,
-    textColor: Color(ColorConsts.whiteColor),
-    fontSize: 14.0,
-    );
-    } else {
-    List<ListEntity> listCheck = await access.findAllList(
-    productSingle.data.prod_variants[va_index].variant_id,selectedSize
-    );
-    if (listCheck.isEmpty && selectedSize != "") {
-    await access.insertInList(ListEntity(
-    variant_id: productSingle.data.prod_variants[va_index].variant_id,
-    sellerId: productSingle.data.prod_sellerid,
-    prod_unitprice: productSingle.data.prod_variants[va_index].prod_unitprice,
-    prod_discount_type: productSingle.data.prod_discount_type,
-    selectedSize: selectedSize,
-    selectedPrice: selectedPrice.toString(),
-    order_quantity: quan.toString(),
-    prod_quantity: productSingle.data.prod_variants[va_index].prod_quantity.toString(),
-    prod_image: productSingle.data.prod_variants[va_index].prod_image[0],
-    prod_name: productSingle.data.prod_name + " (" +
-    productSingle.data.prod_variants[va_index].pro_subtitle + ")",
-    prod_discount: productSingle.data.prod_discount.toString(),
-    prod_strikeout_price: productSingle.data.prod_variants[va_index].prod_strikeout_price,
-    isLiked: productSingle.data.isLiked,
-    ));
+                        onTap: () async {
+                          // Check if the product variant is available
+                          if (productSingle.data.prod_variants[va_index].prod_quantity == 0) {
+                            Fluttertoast.showToast(
+                              msg: 'Not Available!',
+                              toastLength: Toast.LENGTH_SHORT,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.grey,
+                              textColor: Color(ColorConsts.whiteColor),
+                              fontSize: 14.0,
+                            );
+                          } else {
+                            // Check if the selectedSize is not empty
+                            if (selectedSize == ""||selectedPrice==0) {
+                              Fluttertoast.showToast(
+                                msg: 'Please Select Option',
+                                toastLength: Toast.LENGTH_SHORT,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.grey,
+                                textColor: Color(ColorConsts.whiteColor),
+                                fontSize: 14.0,
+                              );
+                            } else {
+                              // Check if the item is already in the cart
+                              List<ListEntity> listCheck = await access.findAllList(
+                                productSingle.data.prod_variants[va_index].variant_id,
+                                selectedSize,
+                              );
+
+                              if (listCheck.isEmpty) {
+                                // Get the quantity for the selected size
+                                int selectedSizeQuantity = sizes
+                                    .firstWhere(
+                                      (size) => size.size == selectedSize,
+                                  orElse: () => ProdSize(size: '', quantity: 0, price: 0),
+                                )
+                                    .quantity;
+
+                                // Insert the item into the cart
+                                await access.insertInList(ListEntity(
+                                  variant_id: productSingle.data.prod_variants[va_index].variant_id,
+                                  id: productSingle.data.id,
+                                  sellerId: productSingle.data.prod_sellerid,
+                                  prod_unitprice: productSingle.data.prod_variants[va_index].prod_unitprice,
+                                  prod_discount_type: productSingle.data.prod_discount_type,
+                                  selectedSize: selectedSize,
+                                  selectedPrice: selectedPrice.toString(),
+                                  order_quantity: quan.toString(),
+                                  prod_quantity: selectedSizeQuantity.toString(), // Set the quantity for the selected size
+                                  prod_image: productSingle.data.prod_variants[va_index].prod_image[0],
+                                  prod_name: productSingle.data.prod_name + " (" +
+                                      productSingle.data.prod_variants[va_index].pro_subtitle + ")",
+                                  prod_discount: productSingle.data.prod_discount.toString(),
+                                  prod_strikeout_price: productSingle.data.prod_variants[va_index].prod_strikeout_price,
+                                  isLiked: productSingle.data.isLiked,
+                                ));
+
+                                Fluttertoast.showToast(
+                                  msg: 'Added Successfully',
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.grey,
+                                  textColor: Color(ColorConsts.whiteColor),
+                                  fontSize: 14.0,
+                                );
+
+                                // Refresh the database
+                                refreshDb();
+                              } else {
+                                Fluttertoast.showToast(
+                                  msg: 'Already In Cart',
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.grey,
+                                  textColor: Color(ColorConsts.whiteColor),
+                                  fontSize: 14.0,
+                                );
+                              }
+                            }
+                          }
+                        },
+                        child: Container(
+                          width: MediaQuery.of(context).size.width / 2,
+                          height: 50,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(ColorConsts.primaryColor),
+                                Color(ColorConsts.secondaryColor),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                          child: Text(
+                            'Add to Cart',
+                            style: TextStyle(
+                              fontFamily: 'OpenSans-Bold',
+                              fontSize: 16,
+                              color: Color(ColorConsts.whiteColor),
+                            ),
+                          ),
+                        ),
+                      ),
 
 
-    Fluttertoast.showToast(
-    msg: 'Added Successfully',
-    toastLength: Toast.LENGTH_SHORT,
-    timeInSecForIosWeb: 1,
-    backgroundColor: Colors.grey,
-    textColor: Color(ColorConsts.whiteColor),
-    fontSize: 14.0,
-    );
-    refreshDb();
-    } else {
-    Fluttertoast.showToast(
-    msg: 'Already In Cart',
-    toastLength: Toast.LENGTH_SHORT,
-    timeInSecForIosWeb: 1,
-    backgroundColor: Colors.grey,
-    textColor: Color(ColorConsts.whiteColor),
-    fontSize: 14.0,
-    );
-    }
-    }
-    },
-    child: Container(
-    width: MediaQuery.of(context).size.width / 2,
-    height: 50,
-    alignment: Alignment.center,
-    decoration: BoxDecoration(
-    gradient: LinearGradient(
-    colors: [
-    Color(ColorConsts.whiteColor),
-    Color(ColorConsts.whiteColor),
-    ],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    ),
-    ),
-    child: Text(
-    'Add to Cart',
-    style: TextStyle(
-    fontFamily: 'OpenSans-Bold',
-    fontSize: 16,
-    color: Color(ColorConsts.blackColor),
-    ),
-    ),
-    ),
-    ),
 
 
-
-    InkResponse(onTap: () async {
+                      InkResponse(onTap: () async {
                         if( productSingle.data.prod_variants[va_index].prod_quantity==0){
 
                           Fluttertoast.showToast(
@@ -3539,17 +3567,27 @@ Container(margin: EdgeInsets.fromLTRB(12, 0, 60, 0),child:TextField( decoration:
                         else {
                           List<ListEntity> listCheck = await access.findAllList(
                             productSingle.data.prod_variants[va_index].variant_id,
-                          );
-                          if (listCheck.isEmpty && selectedSize != "") {
+                          selectedSize);
+                          if (listCheck.isEmpty) {
+                            // Get the quantity for the selected size
+                            int selectedSizeQuantity = sizes
+                                .firstWhere(
+                                  (size) => size.size == selectedSize,
+                              orElse: () => ProdSize(size: '', quantity: 0, price: 0),
+                            )
+                                .quantity;
+
+                            // Insert the item into the cart
                             await access.insertInList(ListEntity(
                               variant_id: productSingle.data.prod_variants[va_index].variant_id,
+                              id: productSingle.data.id,
                               sellerId: productSingle.data.prod_sellerid,
                               prod_unitprice: productSingle.data.prod_variants[va_index].prod_unitprice,
                               prod_discount_type: productSingle.data.prod_discount_type,
                               selectedSize: selectedSize,
                               selectedPrice: selectedPrice.toString(),
                               order_quantity: quan.toString(),
-                              prod_quantity: productSingle.data.prod_variants[va_index].prod_quantity.toString(),
+                              prod_quantity: selectedSizeQuantity.toString(), // Set the quantity for the selected size
                               prod_image: productSingle.data.prod_variants[va_index].prod_image[0],
                               prod_name: productSingle.data.prod_name + " (" +
                                   productSingle.data.prod_variants[va_index].pro_subtitle + ")",
@@ -3557,6 +3595,18 @@ Container(margin: EdgeInsets.fromLTRB(12, 0, 60, 0),child:TextField( decoration:
                               prod_strikeout_price: productSingle.data.prod_variants[va_index].prod_strikeout_price,
                               isLiked: productSingle.data.isLiked,
                             ));
+
+                            Fluttertoast.showToast(
+                              msg: 'Added Successfully',
+                              toastLength: Toast.LENGTH_SHORT,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.grey,
+                              textColor: Color(ColorConsts.whiteColor),
+                              fontSize: 14.0,
+                            );
+
+                            // Refresh the database
+                            refreshDb();
                           }
 
                           Navigator.of(context).push(MaterialPageRoute(builder: (context) {

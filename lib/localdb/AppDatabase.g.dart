@@ -85,6 +85,7 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `ListEntity` ('
                 'regno INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, '
                 'variant_id TEXT NOT NULL, '
+                'id TEXT NOT NULL, '
                 'sellerId TEXT NOT NULL, '
                 'prod_unitprice TEXT NOT NULL, '
                 'prod_discount_type TEXT NOT NULL, '
@@ -123,6 +124,7 @@ class _$DaoAccess extends DaoAccess {
                 (ListEntity item) => <String, Object?>{
               'regno': item.regno,
               'variant_id': item.variant_id,
+                  'id': item.id,
               'sellerId': item.sellerId,
               'prod_unitprice': item.prod_unitprice,
               'prod_discount_type': item.prod_discount_type,
@@ -191,6 +193,7 @@ class _$DaoAccess extends DaoAccess {
         mapper: (Map<String, Object?> row) => ListEntity(
             regno: row['regno'] as int?,
             variant_id: row['variant_id'] as String,
+            id: row['id'] as String,
             sellerId: row['sellerId'] as String,
             prod_unitprice: row['prod_unitprice'] as String,
             prod_discount_type: row['prod_discount_type'] as String,
@@ -213,6 +216,7 @@ class _$DaoAccess extends DaoAccess {
         mapper: (Map<String, Object?> row) => ListEntity(
             regno: row['regno'] as int?,
             variant_id: row['variant_id'] as String,
+            id: row['id'] as String,
             sellerId: row['sellerId'] as String,
             prod_unitprice: row['prod_unitprice'] as String,
             prod_discount_type: row['prod_discount_type'] as String,
@@ -233,18 +237,20 @@ class _$DaoAccess extends DaoAccess {
   }
 
   @override
-  Future<void> delete(String variant_id) async {
+  Future<void> delete(String regno) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM ListEntity WHERE variant_id = ?1',
-        arguments: [variant_id]);
+        'DELETE FROM ListEntity WHERE regno = ?1',
+        arguments: [regno]);
   }
 
   @override
-  Future<void> updateList(String order_quantity, String variant_id) async {
+  Future<void> updateList(String order_quantity, String regno) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE ListEntity SET order_quantity = ?1 WHERE variant_id = ?2',
-        arguments: [order_quantity, variant_id]);
+      'UPDATE ListEntity SET order_quantity = ?1 WHERE regno = ?2',
+      arguments: [order_quantity, regno],
+    );
   }
+
 }
 
 

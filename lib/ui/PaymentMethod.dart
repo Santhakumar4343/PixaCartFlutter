@@ -83,7 +83,7 @@ class MyPaymentState extends State {
    });
    if(res.contains("1")){
      for(int i=0;i<cartList.length;i++){
-     await access.delete(""+cartList[i].variant_id);
+     await access.delete(""+cartList[i].regno.toString());
 
      }
 

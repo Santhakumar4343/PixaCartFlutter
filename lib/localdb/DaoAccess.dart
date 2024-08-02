@@ -17,11 +17,12 @@ abstract class DaoAccess {
   @insert
   Future<void> insertInList(ListEntity list);
 
-  @Query('DELETE FROM ListEntity WHERE variant_id = :variant_id')
-  Future<void> delete(String variant_id);
+  @Query('DELETE FROM ListEntity WHERE regno = :regno')
+  Future<void> delete(String regno);
 
-  @Query('UPDATE ListEntity SET order_quantity = :order_quantity WHERE variant_id = :variant_id')
-  Future<void> updateList(String order_quantity,String variant_id);
+  @Query('UPDATE ListEntity SET order_quantity = :order_quantity WHERE regno = :regno')
+  Future<void> updateList(String order_quantity, String regno);
+
 
 
 }

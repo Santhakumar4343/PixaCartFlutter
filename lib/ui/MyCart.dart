@@ -73,7 +73,7 @@ class cartState extends State<MyCart> {
   // Maps to store selectedPrice and selectedSize for each variant_id
   Map<String, String> selectedPrices = {};
   Map<String, String> selectedSizes = {};
-
+  Map<String, String> selectedProd_Quantites = {};
   Future<void> initDb() async {
     database = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
     access = await database.daoaccess;
@@ -91,7 +91,7 @@ class cartState extends State<MyCart> {
     // Clear the maps before populating
     selectedPrices.clear();
     selectedSizes.clear();
-
+selectedProd_Quantites.clear();
     if (cartLength > 0) {
       // Fetch selected prices and sizes for each variant_id directly from the database
       for (int i = 0; i < cartList.length; i++) {
@@ -99,8 +99,11 @@ class cartState extends State<MyCart> {
         String variantId = cartList[i].variant_id;
         selectedPrices[id.toString()] = cartList[i].selectedPrice;
         selectedSizes[id.toString()] = cartList[i].selectedSize;
+        selectedProd_Quantites[id.toString()]=cartList[i].prod_quantity;
         print(selectedSizes.toString());
         print(selectedPrices.toString());
+       print(selectedProd_Quantites);
+        print(cartList[i].order_quantity+" Order Quantity");
       }
 
       // Process cart items
@@ -125,7 +128,7 @@ class cartState extends State<MyCart> {
 
         // Add to the list with updated prod_unitprice and selectedSize
         lis.add(jsonPro(
-          id.toString(), // Convert int? to String
+          cartList[i].id,
           cartList[i].variant_id,
           cartList[i].sellerId,
           cartList[i].order_quantity,
@@ -635,83 +638,90 @@ class cartState extends State<MyCart> {
                                                               .blackColor)),
 
                                                 ),Container(
-                                                    height: 40,
-                                                    width: 110,
+                                          height: 40,
+                                          width: 110,
+                                          alignment: Alignment.center,
+                                          margin: EdgeInsets.fromLTRB(3, 12, 3, 8),
+                                          decoration: BoxDecoration(
+                                          border: Border.all(color: Color(ColorConsts.grayColor), width: 0.5),
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          ),
+                                          child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                          InkResponse(
+                                          onTap: () async {
+                                          if (int.parse(cartList[idx].order_quantity) > 1) {
+                                          int quan = int.parse(cartList[idx].order_quantity);
+                                          quan--;
+                                          await access.updateList(quan.toString(), cartList[idx].regno.toString());
+                                          fetch();
+                                          } else {
+                                          Fluttertoast.showToast(
+                                          msg: 'Quantity must be more than 1',
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          timeInSecForIosWeb: 1,
+                                          backgroundColor: Colors.grey,
+                                          textColor: Color(ColorConsts.whiteColor),
+                                          fontSize: 14.0,
+                                          );
+                                          }
+                                          },
+                                          child: Image.asset(
+                                          'assets/icons/Minus.png',
+                                          height: 30,
+                                          width: 17,
+                                          ),
+                                          ),
+                                          Container(
+                                          height: 40,
+                                          width: 1,
+                                          color: Color(ColorConsts.grayColor),
+                                          ),
+                                          Text(
+                                          cartList[idx].order_quantity,
+                                          style: TextStyle(
+                                          fontFamily: 'OpenSans',
+                                          fontSize: 19,
+                                          color: Color(ColorConsts.grayColor),
+                                          ),
+                                          ),
+                                          Container(
+                                          height: 40,
+                                          width: 1,
+                                          color: Color(ColorConsts.grayColor),
+                                          ),
+                                          InkResponse(
+                                          onTap: () async {
+                                          if (int.parse(cartList[idx].prod_quantity) > int.parse(cartList[idx].order_quantity)) {
+                                          int quan = int.parse(cartList[idx].order_quantity);
+                                          quan++;
+                                          await access.updateList(quan.toString(), cartList[idx].regno.toString());
+                                          fetch();
+                                          } else {
+                                          Fluttertoast.showToast(
+                                          msg: 'No More Items Available..',
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          timeInSecForIosWeb: 1,
+                                          backgroundColor: Colors.grey,
+                                          textColor: Color(ColorConsts.whiteColor),
+                                          fontSize: 14.0,
+                                          );
+                                          }
+                                          },
+                                          child: Image.asset(
+                                          'assets/icons/Plus.png',
+                                          height: 30,
+                                          width: 16,
+                                          ),
+                                          ),
+                                          ],
+                                          ),
+                                          ),
 
-                                                    alignment: Alignment.center,
-                                                    margin: EdgeInsets.fromLTRB(3, 12, 3, 8),
-                                                    decoration: new BoxDecoration(
-
-                                                        border: Border.all(
-                                                            color: Color(ColorConsts.grayColor), width: 0.5),
-                                                        borderRadius: BorderRadius.circular(8.0)),
-                                                    child:Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                      children: [
-                                                        InkResponse(onTap: () async {
-                                                          if(int.parse(cartList[idx].order_quantity) > 1) {
-
-                                                            int quan= int.parse(cartList[idx].order_quantity);
-                                                            quan--;
-                                                            await access.updateList(''+quan.toString(),''+cartList[idx].variant_id);
-                                                            fetch();
-
-                                                          }else{
-                                                            Fluttertoast.showToast(
-                                                                msg: 'Quantity must be more than 1',
-                                                                toastLength: Toast.LENGTH_SHORT,
-                                                                timeInSecForIosWeb: 1,
-                                                                backgroundColor: Colors.grey,
-                                                                textColor: Color(ColorConsts.whiteColor),
-                                                                fontSize: 14.0);
-                                                          }
-                                                        },child: Image.asset('assets/icons/Minus.png',height: 30,width: 17,),
-                                                        ),
-
-                                                        Container(height: 40,
-                                                          width: 1,
-                                                          color: Color(ColorConsts.grayColor),),
-                                                        Text(
-                                                          ''+cartList[idx].order_quantity,
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                              'OpenSans',
-                                                              fontSize: 19,
-                                                              color: Color(ColorConsts
-                                                                  .grayColor)),
-
-
-                                                        ),
-                                                        Container(height: 40,
-                                                          width: 1,
-                                                          color: Color(ColorConsts.grayColor),),
-
-                                                        InkResponse(onTap: () async {
-                                                          if(int.parse(cartList[idx].prod_quantity) > int.parse(cartList[idx].order_quantity)) {
-
-                                                            int quan= int.parse(cartList[idx].order_quantity);
-                                                            quan++;
-                                                            await access.updateList(''+quan.toString(),''+cartList[idx].variant_id);
-                                                            fetch();
-                                                          }else{
-                                                            Fluttertoast.showToast(
-                                                                msg: 'No More Items Available..',
-                                                                toastLength: Toast.LENGTH_SHORT,
-                                                                timeInSecForIosWeb: 1,
-                                                                backgroundColor: Colors.grey,
-                                                                textColor: Color(ColorConsts.whiteColor),
-                                                                fontSize: 14.0);
-                                                          }
-
-                                                        },child: Image.asset('assets/icons/Plus.png',height: 30,width: 16,),)
-
-
-                                                      ],)
-
-
-                                                ),
-                                                InkResponse(
+                                          InkResponse(
                                                   onTap: () async {
-                                                    await access.delete(''+cartList[idx].variant_id);
+                                                    await access.delete(''+cartList[idx].regno.toString());
 
                                                     fetch();
 
