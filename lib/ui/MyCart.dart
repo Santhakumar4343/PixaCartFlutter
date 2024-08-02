@@ -95,17 +95,21 @@ class cartState extends State<MyCart> {
     if (cartLength > 0) {
       // Fetch selected prices and sizes for each variant_id directly from the database
       for (int i = 0; i < cartList.length; i++) {
+        String id = cartList[i].regno?.toString() ?? '';
         String variantId = cartList[i].variant_id;
-        selectedPrices[variantId] = cartList[i].selectedPrice;
-        selectedSizes[variantId] = cartList[i].selectedSize;
+        selectedPrices[id.toString()] = cartList[i].selectedPrice;
+        selectedSizes[id.toString()] = cartList[i].selectedSize;
+        print(selectedSizes.toString());
+        print(selectedPrices.toString());
       }
 
       // Process cart items
       for (int i = 0; i < cartList.length; i++) {
-        String? selectedPriceStr = selectedPrices[cartList[i].variant_id];
+        String? selectedPriceStr = selectedPrices[cartList[i].regno.toString()];
+        print(selectedPriceStr);
         double selectedPrice = selectedPriceStr != null ? double.parse(selectedPriceStr) : 0.0;
-        String? selectedSize = selectedSizes[cartList[i].variant_id]; // Fetch selectedSize
-
+        String? selectedSize = selectedSizes[cartList[i].regno.toString()]; // Fetch selectedSize
+            print(selectedSize);
         // Calculate amounts based on the selectedPrice
         amount += selectedPrice * double.parse(cartList[i].order_quantity);
         strickPrice += double.parse(cartList[i].prod_strikeout_price);
@@ -116,11 +120,12 @@ class cartState extends State<MyCart> {
         cartList[i].prod_unitprice = selectedPrice.toString();
 
         // Convert id to String before using it
-        String id = cartList[i].id?.toString() ?? '';
+        String id = cartList[i].regno?.toString() ?? '';
+        print(id);
 
         // Add to the list with updated prod_unitprice and selectedSize
         lis.add(jsonPro(
-          id, // Convert int? to String
+          id.toString(), // Convert int? to String
           cartList[i].variant_id,
           cartList[i].sellerId,
           cartList[i].order_quantity,
@@ -134,6 +139,7 @@ class cartState extends State<MyCart> {
     // Convert the list to JSON
     var json = jsonEncode(lis.map((e) => e.toJson()).toList());
     prod_details = json;
+    print(prod_details);
     setState(() {});
   }
 
@@ -581,7 +587,7 @@ class cartState extends State<MyCart> {
                                                           child: Row(
                                                             children: [
                                                               Text(
-                                                                'Size: ${selectedSizes[cartList[idx].variant_id] ?? 'N/A'}',
+                                                                'Size: ${selectedSizes[cartList[idx].regno.toString()] ?? 'N/A'}',
                                                                 style: TextStyle(
                                                                   fontFamily: 'OpenSans',
                                                                   fontSize: 13,

@@ -82,10 +82,27 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ListEntity` (`variant_id` TEXT NOT NULL, `id` TEXT NOT NULL, `sellerId` TEXT NOT NULL, `prod_unitprice` TEXT NOT NULL, `prod_discount_type` TEXT NOT NULL, `selectedSize` TEXT NOT NULL, `selectedPrice` TEXT NOT NULL, `prod_quantity` TEXT NOT NULL, `order_quantity` TEXT NOT NULL, `prod_image` TEXT NOT NULL, `prod_name` TEXT NOT NULL, `prod_discount` TEXT NOT NULL, `prod_strikeout_price` TEXT NOT NULL, `isLiked` INTEGER NOT NULL, PRIMARY KEY (`variant_id`))');
+            'CREATE TABLE IF NOT EXISTS `ListEntity` ('
+                'regno INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, '
+                'variant_id TEXT NOT NULL, '
+                'sellerId TEXT NOT NULL, '
+                'prod_unitprice TEXT NOT NULL, '
+                'prod_discount_type TEXT NOT NULL, '
+                'selectedSize TEXT NOT NULL, '
+                'selectedPrice TEXT NOT NULL, '
+                'prod_quantity TEXT NOT NULL, '
+                'order_quantity TEXT NOT NULL, '
+                'prod_image TEXT NOT NULL, '
+                'prod_name TEXT NOT NULL, '
+                'prod_discount TEXT NOT NULL, '
+                'prod_strikeout_price TEXT NOT NULL, '
+                'isLiked INTEGER NOT NULL'
+                ')'
+        );
 
         await callback?.onCreate?.call(database, version);
       },
+
     );
     return sqfliteDatabaseFactory.openDatabase(path, options: databaseOptions);
   }
@@ -104,7 +121,7 @@ class _$DaoAccess extends DaoAccess {
             database,
             'ListEntity',
                 (ListEntity item) => <String, Object?>{
-              'id': item.id,
+              'regno': item.regno,
               'variant_id': item.variant_id,
               'sellerId': item.sellerId,
               'prod_unitprice': item.prod_unitprice,
@@ -122,9 +139,9 @@ class _$DaoAccess extends DaoAccess {
         _listEntityUpdateAdapter = UpdateAdapter(
             database,
             'ListEntity',
-            ['id'],
+            ['regno'],
                 (ListEntity item) => <String, Object?>{
-              'id': item.id,
+              'regno': item.regno,
               'variant_id': item.variant_id,
               'sellerId': item.sellerId,
               'prod_unitprice': item.prod_unitprice,
@@ -142,9 +159,9 @@ class _$DaoAccess extends DaoAccess {
         _listEntityDeletionAdapter = DeletionAdapter(
             database,
             'ListEntity',
-            ['id'],
+            ['regno'],
                 (ListEntity item) => <String, Object?>{
-              'id': item.id,
+              'regno': item.regno,
               'variant_id': item.variant_id,
               'sellerId': item.sellerId,
               'prod_unitprice': item.prod_unitprice,
@@ -172,7 +189,7 @@ class _$DaoAccess extends DaoAccess {
     return _queryAdapter.queryList(
         'SELECT * FROM ListEntity WHERE variant_id = ?1 AND selectedSize = ?2',
         mapper: (Map<String, Object?> row) => ListEntity(
-            id: row['id'] as int?,
+            regno: row['regno'] as int?,
             variant_id: row['variant_id'] as String,
             sellerId: row['sellerId'] as String,
             prod_unitprice: row['prod_unitprice'] as String,
@@ -194,7 +211,7 @@ class _$DaoAccess extends DaoAccess {
     return _queryAdapter.queryList(
         'SELECT * FROM ListEntity',
         mapper: (Map<String, Object?> row) => ListEntity(
-            id: row['id'] as int?,
+            regno: row['regno'] as int?,
             variant_id: row['variant_id'] as String,
             sellerId: row['sellerId'] as String,
             prod_unitprice: row['prod_unitprice'] as String,
@@ -228,8 +245,8 @@ class _$DaoAccess extends DaoAccess {
         'UPDATE ListEntity SET order_quantity = ?1 WHERE variant_id = ?2',
         arguments: [order_quantity, variant_id]);
   }
-
 }
+
 
 
 

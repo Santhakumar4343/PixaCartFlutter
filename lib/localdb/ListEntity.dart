@@ -3,7 +3,7 @@ import 'package:floor/floor.dart';
 @entity
 class ListEntity {
   @PrimaryKey(autoGenerate: true)
-  final int? id;
+  final int? regno;
 
   final String variant_id;
   final String sellerId;
@@ -20,7 +20,7 @@ class ListEntity {
   final int isLiked;
 
   ListEntity({
-    this.id,
+    this.regno,
     required this.variant_id,
     required this.sellerId,
     required this.prod_unitprice,
