@@ -1,32 +1,50 @@
 class ModelQues {
-
   int status;
   String message;
-  List<quesData>  data;
+  List<quesData> data;
 
-  ModelQues(this.status, this.message, this.data);
-  factory ModelQues.fromJson(Map<dynamic, dynamic> json) {
-    return ModelQues(json['status'], json['message'], List<quesData>.from(json["data"].map((x) => quesData.fromJson(x))));
-  }}
+  ModelQues({
+    this.status = 0, // Default value
+    this.message = '', // Default value
+    this.data = const [], // Default value
+  });
 
-class quesData {
-  String question = "";
-  String question_uname = "";
-  String answer = "";
-  String createdAt = "";
-  int status;
-  String id ="";
-
-
-
-  quesData(this.question,this.question_uname,this.answer, this.createdAt, this.status, this.id);
-
-  factory quesData.fromJson(Map<String, dynamic> json) {
-    return quesData(json['question'] ?? '',json['question_uname'],json['answer'] ?? ''
-        ,json['createdAt'] ?? '0',json['status'] ?? 0,json['_id'] ?? '');
+  factory ModelQues.fromJson(Map<String, dynamic> json) {
+    return ModelQues(
+      status: json['status'] ?? 0,
+      message: json['message'] ?? '',
+      data: List<quesData>.from(
+          (json['data'] ?? []).map((x) => quesData.fromJson(x))
+      ),
+    );
   }
-
 }
 
+class quesData {
+  String question;
+  String question_uname;
+  String answer;
+  String createdAt;
+  int status;
+  String id;
 
+  quesData({
+    this.question = '', // Default value
+    this.question_uname = '', // Default value
+    this.answer = '', // Default value
+    this.createdAt = '0', // Default value
+    this.status = 0, // Default value
+    this.id = '', // Default value
+  });
 
+  factory quesData.fromJson(Map<String, dynamic> json) {
+    return quesData(
+      question: json['question'] ?? '',
+      question_uname: json['question_uname'] ?? '',
+      answer: json['answer'] ?? '',
+      createdAt: json['createdAt'] ?? '0',
+      status: json['status'] ?? 0,
+      id: json['_id'] ?? '',
+    );
+  }
+}

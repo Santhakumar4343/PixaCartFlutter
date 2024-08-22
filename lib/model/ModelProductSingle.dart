@@ -115,14 +115,20 @@ class ProdVarient {
 class ProdSize {
   String size;
   int quantity;
+  int strikePrice;
+  String discountType;
+  int discount;
   int price;
 
-  ProdSize({required this.size, required this.quantity, required this.price});
+  ProdSize({required this.size, required this.quantity,required this.strikePrice,required this.discountType,required this.discount, required this.price});
 
   factory ProdSize.fromJson(Map<String, dynamic> json) {
     return ProdSize(
       size: json['size'] ?? '',
       quantity: json['quantity'] ?? 0,
+      strikePrice:json['strikePrice'] ?? 0,
+      discountType:json['discountType'] ?? '',
+      discount:json['discount'] ?? '',
       price: json['price'] ?? 0,
     );
   }
@@ -131,7 +137,10 @@ class ProdSize {
     return {
       'size': size,
       'quantity': quantity,
-      'price': price,
+      'strikePrice':strikePrice,
+      'discountType':discountType,
+      'discount':discount,
+        'price': price,
     };
   }
 }

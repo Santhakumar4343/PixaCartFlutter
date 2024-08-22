@@ -36,7 +36,7 @@ class AppConstant {
   static const String API_GETAVERAGERATING = "getAverageRating";
   static const String SENDCUSTOMERQUESTION = "sendCustomerQuestion";
   static const String API_getCustomerQuestions = "getCustomerQuestions";
-  static const String API_REVIEWHELPFULCOUNT = "reviewHelpfulCount";
+  static const String API_REVIEWHELPFULCOUNT = "reviewHelpful   +Count";
   static const String API_CREATESUPPORTTICKET = "createSupportTicket";
   static const String API_GETSUPPORTCATEGORLIST = "getSupportCategorList";
   static const String API_GETSUPPORTTICKET = "getSupportTicket";

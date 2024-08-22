@@ -77,10 +77,37 @@ class _State extends State<SingleItemScreen> {
   int va_index = 0;
   late ModelReviewGraph modelReviewGraph;
   late Map<String, dynamic> parsed;
-  late ModelQues modelQuesRes;
+  ModelQues modelQuesRes = ModelQues();
+
   late ModelSettings modelSettings;
   bool desLessMore = true;
   List<ProdSize> sizes = []; // Add this line
+
+  @override
+  void initState() {
+    super.initState(); // Change 1: Move this to the start of the method
+
+    controller.addListener(() {
+      indexValue = controller.page!.round();
+      setState(() {});
+    });
+
+    initDb(); // Initialize the database
+    getValue(); // Fetch necessary data
+  }
+
+  Future<void> initDb() async {
+    database = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
+    access = database.daoaccess;
+    await refreshDb();
+    // Change 2: Remove super.initState(); from this method
+  }
+
+  Future<void> refreshDb() async {
+    List<ListEntity> listdata = await access.getAll();
+    cartLength = listdata.length.toString();
+    setState(() {});
+  }
 Future<void> getValue() async {
     tag = await sharePrefs.getLanguage();
     _userLoginModel = await sharePrefs.getLoginUserData();
@@ -91,31 +118,12 @@ Future<void> getValue() async {
     getSingleProduct();
   }
 
-  Future<void> initDb() async {
-    database = await $FloorAppDatabase.databaseBuilder('app_database.db')
-        .build();
-    access = database.daoaccess;
-    refreshDb();
-    super.initState();
-  }
 
 
-  Future<void> refreshDb() async {
-    List<ListEntity> listdata = await access.getAll();
-    cartLength = listdata.length.toString();
-    setState(() {});
-  }
 
-  @override
-  void initState() {
-    controller.addListener(() {
-      indexValue = controller.page!.round();
-      setState(() {});
-    });
-    initDb();
-    getValue();
-    super.initState();
-  }
+
+
+
 
   dpProLikeDisLike(String product_id) {
     CatePresenter().doLikeProduct(_userLoginModel.data.token, _userLoginModel.data.id, product_id);
@@ -190,7 +198,7 @@ Future<void> getValue() async {
   int calculateAndAssignPrice(List<ProdSize> sizes, String selectedSize, int quantity) {
     int price = sizes.firstWhere(
           (size) => size.size == selectedSize,
-      orElse: () => ProdSize(size: '', quantity: 0, price: 0),
+      orElse: () => ProdSize(size: '', quantity: 0,strikePrice:0,discountType: '',discount:0, price: 0),
     ).price;
 
     // Assign the found price to selectedPrice
@@ -209,6 +217,8 @@ Future<void> getValue() async {
     await ReviewPresenter().reviewHelpfulCount(_userLoginModel.data.token, review_id);
     setState(() {});
   }
+
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -883,29 +893,34 @@ Future<void> getValue() async {
                                       fontSize: 16,
                                       color: Color(ColorConsts
                                           .barColor)),
-
-
                                 ),
                               ),
                               Container(
                                 margin: EdgeInsets.fromLTRB(16, 4, 0, 0),
-                                child: Row(children: [
-                                  // Display the selected size's price
-                                  Text(
-                                    '$currSym ${productSingle.data.prod_variants[va_index].prod_sizes.firstWhere(
-                                            (size) => size.size == selectedSize,
-                                        orElse: () => ProdSize(size: '', quantity: 0, price: 0)
-                                    ).price.toString()} ',
-                                    style: TextStyle(
-                                      fontFamily: 'OpenSans',
-                                      fontSize: 20,
-                                      color: Color(ColorConsts.blackColor),
+                                child: Row(
+                                  children: [
+                                    // Display the selected size's price
+                                    Text(
+                                      '$currSym ${productSingle.data.prod_variants[va_index].prod_sizes.firstWhere(
+                                              (size) => size.size == selectedSize,
+                                          orElse: () => ProdSize(size: '', quantity: 0, strikePrice: 0, discountType: '', discount: 0, price: 0)
+                                      ).price.toString()} ',
+                                      style: TextStyle(
+                                        fontFamily: 'OpenSans',
+                                        fontSize: 20,
+                                        color: Color(ColorConsts.blackColor),
+                                      ),
                                     ),
-                                  ),
-                                  if (double.parse((productSingle.data.prod_variants[va_index].prod_discount).toString()) > 0)
-                                    if (productSingle.data.prod_variants[va_index].prod_strikeout_price != 0)
+                                    // Display the strikeout price if applicable
+                                    if (productSingle.data.prod_variants[va_index].prod_sizes.firstWhere(
+                                            (size) => size.size == selectedSize,
+                                        orElse: () => ProdSize(size: '', quantity: 0, strikePrice: 0, discountType: '', discount: 0, price: 0)
+                                    ).strikePrice > 0)
                                       Text(
-                                        '${productSingle.data.prod_variants[va_index].prod_strikeout_price.toString()}',
+                                        ' ${productSingle.data.prod_variants[va_index].prod_sizes.firstWhere(
+                                                (size) => size.size == selectedSize,
+                                            orElse: () => ProdSize(size: '', quantity: 0, strikePrice: 0, discountType: '', discount: 0, price: 0)
+                                        ).strikePrice.toString()}',
                                         style: TextStyle(
                                           decoration: TextDecoration.lineThrough,
                                           decorationThickness: 2.2,
@@ -916,30 +931,87 @@ Future<void> getValue() async {
                                           color: Color(ColorConsts.grayColor),
                                         ),
                                       ),
-                                  if (double.parse((productSingle.data.prod_variants[va_index].prod_discount).toString()) > 0)
-                                    (productSingle.data.prod_variants[va_index].prod_discount_type.contains("flat"))
-                                        ? Text(
-                                      " ${productSingle.data.prod_variants[va_index].prod_discount.toString()} Flat Off",
-                                      style: TextStyle(
-                                        fontFamily: 'OpenSans',
-                                        fontSize: 13,
-                                        color: (productSingle.data.prod_variants[va_index].prod_quantity == 0)
-                                            ? Color(0x9AB446FF)
-                                            : Color(ColorConsts.primaryColor),
+                                    // Display the discount if applicable
+                                    if (productSingle.data.prod_variants[va_index].prod_sizes.firstWhere(
+                                            (size) => size.size == selectedSize,
+                                        orElse: () => ProdSize(size: '', quantity: 0, strikePrice: 0, discountType: '', discount: 0, price: 0)
+                                    ).discount > 0)
+                                      Text(
+                                        " ${productSingle.data.prod_variants[va_index].prod_sizes.firstWhere(
+                                                (size) => size.size == selectedSize,
+                                            orElse: () => ProdSize(size: '', quantity: 0, strikePrice: 0, discountType: '', discount: 0, price: 0)
+                                        ).discount.toString()} ${productSingle.data.prod_variants[va_index].prod_sizes.firstWhere(
+                                                (size) => size.size == selectedSize,
+                                            orElse: () => ProdSize(size: '', quantity: 0, strikePrice: 0, discountType: '', discount: 0, price: 0)
+                                        ).discountType == 'flat' ? 'Flat Off' : '% Off'}",
+                                        style: TextStyle(
+                                          fontFamily: 'OpenSans',
+                                          fontSize: 13,
+                                          color: productSingle.data.prod_variants[va_index].prod_sizes.firstWhere(
+                                                  (size) => size.size == selectedSize,
+                                              orElse: () => ProdSize(size: '', quantity: 0, strikePrice: 0, discountType: '', discount: 0, price: 0)
+                                          ).quantity == 0
+                                              ? Color(0x9AB446FF)
+                                              : Color(ColorConsts.primaryColor),
+                                        ),
                                       ),
-                                    )
-                                        : Text(
-                                      " ${productSingle.data.prod_variants[va_index].prod_discount.toString()}% Off",
-                                      style: TextStyle(
-                                        fontFamily: 'OpenSans',
-                                        fontSize: 13,
-                                        color: (productSingle.data.prod_variants[va_index].prod_quantity == 0)
-                                            ? Color(0x9AB446FF)
-                                            : Color(ColorConsts.primaryColor),
-                                      ),
-                                    ),
-                                ]),
+                                  ],
+                                ),
                               ),
+
+                              // Container(
+                              //   margin: EdgeInsets.fromLTRB(16, 4, 0, 0),
+                              //   child: Row(children: [
+                              //     // Display the selected size's price
+                              //     Text(
+                              //       '$currSym ${productSingle.data.prod_variants[va_index].prod_sizes.firstWhere(
+                              //               (size) => size.size == selectedSize,
+                              //           orElse: () => ProdSize(size: '', quantity: 0, price: 0)
+                              //       ).price.toString()} ',
+                              //       style: TextStyle(
+                              //         fontFamily: 'OpenSans',
+                              //         fontSize: 20,
+                              //         color: Color(ColorConsts.blackColor),
+                              //       ),
+                              //     ),
+                              //     if (double.parse((productSingle.data.prod_variants[va_index].prod_discount).toString()) > 0)
+                              //       if (productSingle.data.prod_variants[va_index].prod_strikeout_price != 0)
+                              //         Text(
+                              //           '${productSingle.data.prod_variants[va_index].prod_strikeout_price.toString()}',
+                              //           style: TextStyle(
+                              //             decoration: TextDecoration.lineThrough,
+                              //             decorationThickness: 2.2,
+                              //             fontFamily: 'OpenSans',
+                              //             decorationStyle: TextDecorationStyle.solid,
+                              //             decorationColor: Colors.black54,
+                              //             fontSize: 13,
+                              //             color: Color(ColorConsts.grayColor),
+                              //           ),
+                              //         ),
+                              //     if (double.parse((productSingle.data.prod_variants[va_index].prod_discount).toString()) > 0)
+                              //       (productSingle.data.prod_variants[va_index].prod_discount_type.contains("flat"))
+                              //           ? Text(
+                              //         " ${productSingle.data.prod_variants[va_index].prod_discount.toString()} Flat Off",
+                              //         style: TextStyle(
+                              //           fontFamily: 'OpenSans',
+                              //           fontSize: 13,
+                              //           color: (productSingle.data.prod_variants[va_index].prod_quantity == 0)
+                              //               ? Color(0x9AB446FF)
+                              //               : Color(ColorConsts.primaryColor),
+                              //         ),
+                              //       )
+                              //           : Text(
+                              //         " ${productSingle.data.prod_variants[va_index].prod_discount.toString()}% Off",
+                              //         style: TextStyle(
+                              //           fontFamily: 'OpenSans',
+                              //           fontSize: 13,
+                              //           color: (productSingle.data.prod_variants[va_index].prod_quantity == 0)
+                              //               ? Color(0x9AB446FF)
+                              //               : Color(ColorConsts.primaryColor),
+                              //         ),
+                              //       ),
+                              //   ]),
+                              // ),
                               /*    Container(
             margin: EdgeInsets.fromLTRB(
                 16, 2, 0, 0),
@@ -1101,12 +1173,14 @@ Future<void> getValue() async {
                                             onTap: () {
                                               var selectedSizeData = sizes.firstWhere(
                                                       (size) => size.size == selectedSize,
-                                                  orElse: () => ProdSize(size: '', quantity: 0, price: 0));
+                                                  orElse: () => ProdSize(size: '', quantity: 0,strikePrice: 0,discountType: '',discount: 0, price: 0));
                                               if (quan < selectedSizeData.quantity) {
                                                 setState(() {
                                                   quan++;
                                                 });
-                                              } else {
+                                              }
+                                                 else {
+                                                   print("o,moootmgkl");
                                                 Fluttertoast.showToast(
                                                   msg: 'Not Available!',
                                                   toastLength: Toast.LENGTH_SHORT,
@@ -1128,7 +1202,7 @@ Future<void> getValue() async {
                                       ),
                                     ),
                                     Text(
-                                      '(${sizes.firstWhere((size) => size.size == selectedSize, orElse: () => ProdSize(size: '', quantity: 0, price: 0)).quantity} Available)',
+                                      '(${sizes.firstWhere((size) => size.size == selectedSize, orElse: () => ProdSize(size: '', quantity: 0,strikePrice: 0,discountType: '',discount: 0, price: 0)).quantity} Available)',
                                       style: TextStyle(
                                         fontSize: 16,
                                         color: Colors.grey,
@@ -3466,7 +3540,7 @@ Container(margin: EdgeInsets.fromLTRB(12, 0, 60, 0),child:TextField( decoration:
                                 textColor: Color(ColorConsts.whiteColor),
                                 fontSize: 14.0,
                               );
-                            } else {
+                            } else{
                               // Check if the item is already in the cart
                               List<ListEntity> listCheck = await access.findAllList(
                                 productSingle.data.prod_variants[va_index].variant_id,
@@ -3478,17 +3552,48 @@ Container(margin: EdgeInsets.fromLTRB(12, 0, 60, 0),child:TextField( decoration:
                                 int selectedSizeQuantity = sizes
                                     .firstWhere(
                                       (size) => size.size == selectedSize,
-                                  orElse: () => ProdSize(size: '', quantity: 0, price: 0),
+                                  orElse: () => ProdSize(size: '', quantity: 0,strikePrice: 0,discountType: '',discount: 0, price: 0),
                                 )
                                     .quantity;
-
+                                int selectedStrikePrice = sizes
+                                    .firstWhere(
+                                      (size) => size.size == selectedSize,
+                                  orElse: () => ProdSize(size: '', quantity: 0,strikePrice: 0,discountType: '',discount: 0, price: 0),
+                                )
+                                    .strikePrice;
+                                String prod_discount_type = sizes
+                                    .firstWhere(
+                                      (size) => size.size == selectedSize,
+                                  orElse: () => ProdSize(size: '', quantity: 0,strikePrice: 0,discountType: '',discount: 0, price: 0),
+                                )
+                                    .discountType;
+                                int selectedDiscount = sizes
+                                    .firstWhere(
+                                      (size) => size.size == selectedSize,
+                                  orElse: () => ProdSize(size: '', quantity: 0,strikePrice: 0,discountType: '',discount: 0, price: 0),
+                                )
+                                    .discount;
+                                print("selected Strik :"+selectedStrikePrice.toString());
+                                print("selected dicT :"+prod_discount_type);
+                                print("selected disc :"+selectedDiscount.toString());
+                                       if(selectedSizeQuantity<=0){
+                                         Fluttertoast.showToast(
+                                           msg: 'Not Available',
+                                           toastLength: Toast.LENGTH_SHORT,
+                                           timeInSecForIosWeb: 1,
+                                           backgroundColor: Colors.grey,
+                                           textColor: Color(ColorConsts.whiteColor),
+                                           fontSize: 14.0,
+                                         );
+                                         return;
+                                       }
                                 // Insert the item into the cart
                                 await access.insertInList(ListEntity(
                                   variant_id: productSingle.data.prod_variants[va_index].variant_id,
                                   id: productSingle.data.id,
                                   sellerId: productSingle.data.prod_sellerid,
                                   prod_unitprice: productSingle.data.prod_variants[va_index].prod_unitprice,
-                                  prod_discount_type: productSingle.data.prod_discount_type,
+                                  prod_discount_type: prod_discount_type,
                                   selectedSize: selectedSize,
                                   selectedPrice: selectedPrice.toString(),
                                   order_quantity: quan.toString(),
@@ -3496,8 +3601,8 @@ Container(margin: EdgeInsets.fromLTRB(12, 0, 60, 0),child:TextField( decoration:
                                   prod_image: productSingle.data.prod_variants[va_index].prod_image[0],
                                   prod_name: productSingle.data.prod_name + " (" +
                                       productSingle.data.prod_variants[va_index].pro_subtitle + ")",
-                                  prod_discount: productSingle.data.prod_discount.toString(),
-                                  prod_strikeout_price: productSingle.data.prod_variants[va_index].prod_strikeout_price,
+                                  prod_discount: selectedDiscount.toString(),
+                                  prod_strikeout_price: selectedStrikePrice.toString(),
                                   isLiked: productSingle.data.isLiked,
                                 ));
 
@@ -3573,17 +3678,37 @@ Container(margin: EdgeInsets.fromLTRB(12, 0, 60, 0),child:TextField( decoration:
                             int selectedSizeQuantity = sizes
                                 .firstWhere(
                                   (size) => size.size == selectedSize,
-                              orElse: () => ProdSize(size: '', quantity: 0, price: 0),
+                              orElse: () => ProdSize(size: '', quantity: 0,strikePrice: 0,discountType: '',discount: 0, price: 0),
                             )
                                 .quantity;
-
+                            int selectedStrikePrice = sizes
+                                .firstWhere(
+                                  (size) => size.size == selectedSize,
+                              orElse: () => ProdSize(size: '', quantity: 0,strikePrice: 0,discountType: '',discount: 0, price: 0),
+                            )
+                                .strikePrice;
+                            String prod_discount_type = sizes
+                                .firstWhere(
+                                  (size) => size.size == selectedSize,
+                              orElse: () => ProdSize(size: '', quantity: 0,strikePrice: 0,discountType: '',discount: 0, price: 0),
+                            )
+                                .discountType;
+                            int selectedDiscount = sizes
+                                .firstWhere(
+                                  (size) => size.size == selectedSize,
+                              orElse: () => ProdSize(size: '', quantity: 0,strikePrice: 0,discountType: '',discount: 0, price: 0),
+                            )
+                                .discount;
+                            print("selected Strik :"+selectedStrikePrice.toString());
+                            print("selected dicT :"+prod_discount_type);
+                            print("selected disc :"+selectedDiscount.toString());
                             // Insert the item into the cart
                             await access.insertInList(ListEntity(
                               variant_id: productSingle.data.prod_variants[va_index].variant_id,
                               id: productSingle.data.id,
                               sellerId: productSingle.data.prod_sellerid,
                               prod_unitprice: productSingle.data.prod_variants[va_index].prod_unitprice,
-                              prod_discount_type: productSingle.data.prod_discount_type,
+                              prod_discount_type: prod_discount_type.toString(),
                               selectedSize: selectedSize,
                               selectedPrice: selectedPrice.toString(),
                               order_quantity: quan.toString(),
@@ -3591,11 +3716,10 @@ Container(margin: EdgeInsets.fromLTRB(12, 0, 60, 0),child:TextField( decoration:
                               prod_image: productSingle.data.prod_variants[va_index].prod_image[0],
                               prod_name: productSingle.data.prod_name + " (" +
                                   productSingle.data.prod_variants[va_index].pro_subtitle + ")",
-                              prod_discount: productSingle.data.prod_discount.toString(),
-                              prod_strikeout_price: productSingle.data.prod_variants[va_index].prod_strikeout_price,
+                              prod_discount: selectedDiscount.toString(),
+                              prod_strikeout_price: selectedStrikePrice.toString(),
                               isLiked: productSingle.data.isLiked,
                             ));
-
                             Fluttertoast.showToast(
                               msg: 'Added Successfully',
                               toastLength: Toast.LENGTH_SHORT,

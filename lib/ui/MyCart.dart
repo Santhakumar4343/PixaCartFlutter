@@ -95,24 +95,20 @@ selectedProd_Quantites.clear();
     if (cartLength > 0) {
       // Fetch selected prices and sizes for each variant_id directly from the database
       for (int i = 0; i < cartList.length; i++) {
+        print("discount :"+cartList[i].prod_discount+"  Strikeout Price :"+cartList[i].prod_strikeout_price+"  discount type :"+cartList[i].prod_discount_type+" ===================");
         String id = cartList[i].regno?.toString() ?? '';
         String variantId = cartList[i].variant_id;
         selectedPrices[id.toString()] = cartList[i].selectedPrice;
         selectedSizes[id.toString()] = cartList[i].selectedSize;
         selectedProd_Quantites[id.toString()]=cartList[i].prod_quantity;
-        print(selectedSizes.toString());
-        print(selectedPrices.toString());
-       print(selectedProd_Quantites);
-        print(cartList[i].order_quantity+" Order Quantity");
       }
-
       // Process cart items
       for (int i = 0; i < cartList.length; i++) {
         String? selectedPriceStr = selectedPrices[cartList[i].regno.toString()];
-        print(selectedPriceStr);
+
         double selectedPrice = selectedPriceStr != null ? double.parse(selectedPriceStr) : 0.0;
         String? selectedSize = selectedSizes[cartList[i].regno.toString()]; // Fetch selectedSize
-            print(selectedSize);
+
         // Calculate amounts based on the selectedPrice
         amount += selectedPrice * double.parse(cartList[i].order_quantity);
         strickPrice += double.parse(cartList[i].prod_strikeout_price);
@@ -124,7 +120,7 @@ selectedProd_Quantites.clear();
 
         // Convert id to String before using it
         String id = cartList[i].regno?.toString() ?? '';
-        print(id);
+
 
         // Add to the list with updated prod_unitprice and selectedSize
         lis.add(jsonPro(
@@ -142,7 +138,7 @@ selectedProd_Quantites.clear();
     // Convert the list to JSON
     var json = jsonEncode(lis.map((e) => e.toJson()).toList());
     prod_details = json;
-    print(prod_details);
+
     setState(() {});
   }
 
